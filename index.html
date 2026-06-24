@@ -303,6 +303,7 @@
 <div class="app-header">
   <h1>📋 Leasing Schedule</h1>
   <div class="header-controls">
+    <button onclick="toggleView()" id="viewToggle" style="background:rgba(255,255,255,0.08);color:#fff;padding:6px 14px;border:none;border-radius:6px;cursor:pointer;margin-right:12px;">Table View</button>
     <div class="day-nav">
       <button onclick="goDay(-1)">← Prev</button>
       <span class="date-display" id="dateDisplay">Loading...</span>
@@ -335,11 +336,18 @@
 <script>
 // ========== State ==========
 let currentDate = new Date();
+let isTableView = false;
 const TIME_SLOTS = [
   '10:00','10:30','11:00','11:30','12:00','12:30',
   '13:00','13:30','14:00','14:30','15:00','15:30',
   '16:00','16:30','17:00','17:30','18:00'
 ];
+
+function toggleView() {
+  isTableView = !isTableView;
+  document.getElementById('viewToggle').textContent = isTableView ? 'Calendar View' : 'Table View';
+  loadDay(currentDate);
+}
 
 // ========== API Calls ==========
 async function fetchEvents(date) {
@@ -358,7 +366,46 @@ function renderDay(date, events) {
   updateDateDisplay(date);
 
   const container = document.getElementById('app-content');
-  const dayName = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  if (isTableView) {
+    renderTable(events);
+  } else {
+    renderGrid(events);
+  }
+}
+
+function renderTable(events) {
+  const container = document.getElementById('app-content');
+  let html = `
+    <div class="day-section" style="margin-top:20px;">
+      <table style="width:100%; border-collapse:collapse; background:white;">
+        <thead>
+          <tr style="background:#f0efe9; text-align:left;">
+            <th style="padding:10px; border-bottom:1px solid #e0ddd7;">Time</th>
+            <th style="padding:10px; border-bottom:1px solid #e0ddd7;">Name</th>
+            <th style="padding:10px; border-bottom:1px solid #e0ddd7;">Phone</th>
+            <th style="padding:10px; border-bottom:1px solid #e0ddd7;">Email</th>
+            <th style="padding:10px; border-bottom:1px solid #e0ddd7;">Units</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${events.map(ev => `
+            <tr style="border-bottom:1px solid #e0ddd7;">
+              <td style="padding:10px;">${ev.time}</td>
+              <td style="padding:10px;">${ev.name || '—'}</td>
+              <td style="padding:10px;">${ev.phone || ''}</td>
+              <td style="padding:10px;">${ev.email || ''}</td>
+              <td style="padding:10px;">${ev.units.join(', ')}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  container.innerHTML = html;
+}
+
+function renderGrid(events) {
+  const container = document.getElementById('app-content');
+  const dayName = currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   let html = `
     <div class="day-section">
