@@ -14,8 +14,8 @@ const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
 // For local dev: http://localhost:8765/oauth2callback
 // For Railway: https://leasing-calendar-production.up.railway.app/oauth2callback
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
-// Must match exactly what's configured in Google Cloud Console (currently: base URL without path)
-const REDIRECT_URI = `${BASE_URL}`;
+// Must match exactly what's configured in Google Cloud Console (currently: base URL without trailing slash)
+const REDIRECT_URI = BASE_URL.replace(/\/$/, "");
 
 // Token storage — from env var or file
 const TOKEN_PATH = path.join(__dirname, 'token.json');
