@@ -7,9 +7,9 @@ const app = express();
 const PORT = process.env.PORT || 8765;
 
 // OAuth credentials from Google Cloud Console
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '771435431651-bm0p6evh7uvclfhugqfa6gudu4atr2p7.apps.googleusercontent.com';
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-
+const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
 // Redirect URI — must match what's in Google Cloud Console
 // For local dev: http://localhost:8765/oauth2callback
 // For Railway: https://leasing-calendar-production.up.railway.app/oauth2callback
@@ -19,7 +19,6 @@ const REDIRECT_URI = `${BASE_URL}`;
 
 // Token storage — from env var or file
 const TOKEN_PATH = path.join(__dirname, 'token.json');
-const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 

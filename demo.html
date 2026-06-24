@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leasing Office Calendar — Demo</title>
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: #e0ddd7;
+    --text: #1a1a1a;
+    --text-muted: #88847c;
+    --accent: #2b6cb0;
+    --header-bg: #2d3748;
+    --header-text: #fff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .app-header {
+    background: var(--header-bg);
+    color: var(--header-text);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .app-header h1 { font-size: 20px; font-weight: 600; }
+  .day-nav { display: flex; align-items: center; gap: 8px; }
+  .day-nav button {
+    background: rgba(255,255,255,0.15);
+    border: none; color: #fff; padding: 6px 14px;
+    border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;
+  }
+  .day-nav button:hover { background: rgba(255,255,255,0.25); }
+  .date-display { font-size: 15px; font-weight: 500; min-width: 160px; text-align: center; }
+  .legend-bar {
+    display: flex; gap: 18px; padding: 10px 24px;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    font-size: 12px; flex-wrap: wrap; align-items: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--border); }
+  .legend-badge { padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+  .day-section {
+    max-width: 1440px; margin: 16px auto; padding: 0 16px;
+  }
+  .day-section-inner {
+    background: var(--surface); border-radius: 10px; border: 1px solid var(--border);
+    overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .day-header {
+    background: var(--header-bg); color: #fff;
+    padding: 10px 16px; font-weight: 600; font-size: 15px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .day-header .status-legend { font-size: 11px; font-weight: 400; opacity: 0.85; }
+  .grid-headers {
+    display: grid;
+    grid-template-columns: 32px 80px 2fr 1.2fr 1.5fr 2fr 2fr;
+    background: #f0efe9; border-bottom: 1px solid var(--border);
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--text-muted);
+  }
+  .grid-headers > div { padding: 7px 8px; border-right: 1px solid var(--border); }
+  .grid-headers > div:last-child { border-right: none; }
+  .slot-row {
+    display: grid;
+    grid-template-columns: 32px 80px 2fr 1.2fr 1.5fr 2fr 2fr;
+    border-bottom: 1px solid var(--border); min-height: 36px;
+  }
+  .slot-row:last-child { border-bottom: none; }
+  .slot-row:hover { background: #faf9f6; }
+  .slot-row.confirmed { background: #f0faf0; }
+  .slot-row.unconfirmed { background: #fffbe6; }
+  .slot-row > div {
+    padding: 6px 8px; font-size: 13px; line-height: 1.4;
+    border-right: 1px solid var(--border); display: flex;
+    align-items: flex-start; flex-wrap: wrap; gap: 3px;
+  }
+  .slot-row > div:last-child { border-right: none; }
+  .col-checkbox { justify-content: center; align-items: center !important; }
+  .check-indicator {
+    width: 16px; height: 16px; border-radius: 3px; border: 2px solid #bbb;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 10px;
+  }
+  .check-indicator.checked { background: #2b6cb0; border-color: #2b6cb0; color: #fff; }
+  .col-time { font-weight: 500; color: var(--text-muted); font-size: 12px; align-items: center !important; }
+  .col-name { font-weight: 500; }
+  .empty-label { color: var(--text-muted); font-style: italic; font-weight: 400; }
+  .col-phone { font-size: 12px !important; }
+  .col-email { font-size: 12px !important; word-break: break-all; }
+  .unit-badge {
+    display: inline-block; padding: 1px 6px; border-radius: 3px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+  }
+  .unit-badge.e { background: #cfe2ff; color: #0a58ca; }
+  .unit-badge.ok { background: #d1e7dd; color: #155724; }
+  .unit-badge.v { background: #f8d7da; color: #721c24; }
+  .unit-badge.no { background: #f5c6cb; color: #721c24; }
+  .unit-badge.ns { background: #e2e3e5; color: #383d41; }
+  .unit-badge.r { background: #e2e3e5; color: #383d41; }
+  .unit-badge.default { background: #e9ecef; color: #495057; }
+  .col-notes { font-size: 12px !important; color: var(--text-muted); }
+  .closed-row .col-name { color: #999; font-style: italic; }
+  .closed-row .col-name::before { content: "🔒 "; }
+  .closed-badge { color: #e53e3e; font-weight: 600; font-size: 11px; text-transform: uppercase; }
+  @media (max-width: 900px) {
+    .grid-headers, .slot-row { grid-template-columns: 28px 60px 1.5fr 0 0 1.2fr 1fr; }
+    .col-phone, .col-email { display: none !important; }
+  }
+  @media (max-width: 600px) {
+    .grid-headers, .slot-row { grid-template-columns: 24px 50px 1fr 1fr; }
+    .col-phone, .col-email, .col-notes { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>📋 Leasing Schedule</h1>
+  <div class="header-controls">
+    <div class="day-nav">
+      <button onclick="goDay(-1)">← Prev</button>
+      <span class="date-display" id="dateDisplay">Wed, Jun 24, 2026</span>
+      <button onclick="goDay(1)">Next →</button>
+      <button onclick="goToday()" style="background:rgba(255,255,255,0.08);font-size:12px;">Today</button>
+    </div>
+    <span style="color:#48bb78;font-size:13px;">✅ Demo Mode</span>
+  </div>
+</div>
+
+<div class="legend-bar">
+  <span style="font-weight:600;font-size:12px;">Legend:</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:#d4edda;"></span> Confirmed</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:#fff3cd;"></span> Unconfirmed</span>
+  <span class="legend-item"><span class="legend-badge" style="background:#cfe2ff;">E</span> Emailed</span>
+  <span class="legend-item"><span class="legend-badge" style="background:#d1e7dd;">OK</span> Ok to Show</span>
+  <span class="legend-item"><span class="legend-badge" style="background:#f8d7da;">V</span> Vacant</span>
+  <span class="legend-item"><span class="legend-badge" style="background:#e2e3e5;">R</span> Rented</span>
+  <span class="legend-item"><span class="legend-badge" style="background:#f5c6cb;">NO</span> Not Available</span>
+  <span class="legend-item"><span class="legend-badge" style="background:#e2e3e5;">NS</span> No Show</span>
+</div>
+
+<div id="app-content"></div>
+
+<script>
+const TIME_SLOTS = ['10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+
+// ===== DEMO DATA =====
+const NAMES = [
+  ['Pooji (RV)', 'Luana Feng', '', 'Nate Goodman', '', 'Benny (Ash)', '', '', 'CLOSED'],
+  ['', 'Megan B.', 'Melanie (CALL)', '', '', '', 'Kumiko', '', 'CLOSED'],
+  ['Russ Brandon', '', 'Emma Itzla', '', 'Nikhila', '', '', '', 'CLOSED'],
+  ['', 'Jane Katz', 'Myles Gamboa', '', '', 'Heddie F.', '', '', 'CLOSED'],
+  ['', 'PTE', '', '', 'Jonathan Zarka', '', 'Katie Joy', '', 'CLOSED'],
+  ['', '', 'Ali Bennett', '', 'Todd Grundleger', '', '', 'Chloe Zhang', 'CLOSED'],
+  ['', '', '', '', '', '', '', '', ''],
+];
+
+const PHONES = [
+  ['646-808-4595', '', '', '', '', '', '', '', ''],
+  ['', '508-654-7471', '404-242-1161', '', '', '', '347-899-0561', '', ''],
+  ['585-441-4632', '', '', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', '', '', ''],
+  ['', '', '', '', '516-642-5636', '', '', '', ''],
+  ['', '', '860-716-2517', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', '', '', ''],
+];
+
+const EMAILS = [
+  ['PoojiNYC@gmail.com', 'fengluana@gmail.com', '', 'nategoodman1998@gmail.com', '', '', '', '', ''],
+  ['', 'MegBouv2@yahoo.com', 'melanie.g.epstein@gmail.com', '', '', '', 'kumiko@able-global.com', '', ''],
+  ['Russ.Brandon@theufl.com', '', 'emmaitzla@gmail.com', '', 'pothnik@gmail.com', '', '', '', ''],
+  ['', 'jkatz@cbwarburg.com', '', '', '', 'hflurscheim@gmail.com', '', '', ''],
+  ['', '', '', '', 'zarkajonathan98@gmail.com', '', '', '', ''],
+  ['', '', 'ahb793@gmail.com', '', 'tgrundleger@gmail.com', '', '', 'chzhan647@gmail.com', ''],
+  ['', '', '', '', '', '', '', '', ''],
+];
+
+const UNITS_DATA = [
+  ['1702-v', '1702-v', '', '1702-v,1910-no,2302-ok', '', '1702-v', '', '', ''],
+  ['', '1702-v', '622-no,1625-e', '', '', '', '1702-v,2218-v', '', ''],
+  ['821-ok,622-ok', '', '1501-ok', '', '1702-v,2302-e', '', '', '', ''],
+  ['', '1625-ok', '2302-ok,1702-v', '', '', '1702-v', '', '', ''],
+  ['', '', '', '', '2218-v,2302-v', '', '1702-v', '1910-ok,1702-v,2302-ok', ''],
+  ['', '', '1702-v,2218-v', '', '1702-v,2218-v', '', '', '', ''],
+  ['', '', '', '', '', '', '1702-v', '', ''],
+];
+
+const NOTES_DATA = [
+  ['', 'Has cat. No roommate. Budget 4k-6k.', '', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', '', '', ''],
+  ['', '', '', 'Looking for 1BR, 5k-6k.', '', '', '', '', ''],
+  ['', '', '', '', '', '', 'Has cat. No roommate. Budget 4k-6k.', '', ''],
+  ['', '', '', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', '', '', ''],
+];
+
+let currentDate = new Date();
+
+function getDayData(date) {
+  const dayOfWeek = date.getDay(); // 0=Sun, 1=Mon, etc.
+  const slots = [];
+  for (let i = 0; i < TIME_SLOTS.length; i++) {
+    const name = (NAMES[dayOfWeek] && NAMES[dayOfWeek][i]) || '';
+    const isClosed = name === 'CLOSED';
+    const hasData = name && !isClosed;
+    slots.push({
+      time: TIME_SLOTS[i],
+      name: isClosed ? 'CLOSED' : name,
+      phone: (PHONES[dayOfWeek] && PHONES[dayOfWeek][i]) || '',
+      email: (EMAILS[dayOfWeek] && EMAILS[dayOfWeek][i]) || '',
+      units: hasData ? ((UNITS_DATA[dayOfWeek] && UNITS_DATA[dayOfWeek][i]) || '').split(',').map(s => s.trim()).filter(Boolean) : [],
+      notes: (NOTES_DATA[dayOfWeek] && NOTES_DATA[dayOfWeek][i]) || '',
+      confirmed: hasData && Math.random() > 0.35,
+    });
+  }
+  return slots;
+}
+
+function renderDay(date) {
+  currentDate = date;
+  const dayName = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  document.getElementById('dateDisplay').textContent = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+  const slots = getDayData(date);
+
+  let html = `
+    <div class="day-section">
+      <div class="day-section-inner">
+        <div class="day-header">
+          <span>${dayName}</span>
+          <span class="status-legend">E-Emailed &nbsp; OK-Ok to Show &nbsp; V-Vacant &nbsp; R-Rented &nbsp; NS-No Show</span>
+        </div>
+        <div class="grid-headers">
+          <div></div><div>Time</div><div>Name</div>
+          <div class="phone-col">Phone</div><div class="email-col">Email</div>
+          <div>Units</div><div class="notes-col">Notes</div>
+        </div>`;
+
+  for (const s of slots) {
+    const hasData = s.name && s.name !== 'CLOSED';
+    const isClosed = s.name === 'CLOSED';
+    let rowClass = 'slot-row';
+    if (hasData && s.confirmed) rowClass += ' confirmed';
+    else if (hasData) rowClass += ' unconfirmed';
+    if (isClosed) rowClass += ' closed-row';
+
+    const unitHtml = s.units.length > 0
+      ? s.units.map(u => {
+          const trimmed = u.trim();
+          const suffix = trimmed.includes('-') ? trimmed.split('-').pop().toLowerCase() : '';
+          const badgeClass = ['e','ok','v','no','r','ns'].includes(suffix) ? suffix : 'default';
+          return `<span class="unit-badge ${badgeClass}">${trimmed}</span>`;
+        }).join(' ')
+      : '';
+
+    html += `
+      <div class="${rowClass}">
+        <div class="col-checkbox">${hasData ? `<span class="check-indicator ${s.confirmed ? 'checked' : ''}">${s.confirmed ? '✓' : ''}</span>` : ''}</div>
+        <div class="col-time">${s.time}</div>
+        <div class="col-name">${isClosed ? '<span class="closed-badge">🔒 CLOSED</span>' : (s.name || '<span class="empty-label">—</span>')}</div>
+        <div class="col-phone phone-col">${s.phone}</div>
+        <div class="col-email email-col">${s.email}</div>
+        <div class="col-units">${unitHtml}</div>
+        <div class="col-notes notes-col">${s.notes}</div>
+      </div>`;
+  }
+
+  html += '</div></div>';
+  document.getElementById('app-content').innerHTML = html;
+}
+
+function goDay(delta) {
+  const d = new Date(currentDate);
+  d.setDate(d.getDate() + delta);
+  renderDay(d);
+}
+
+function goToday() { renderDay(new Date()); }
+
+renderDay(new Date());
+</script>
+</body>
+</html>
