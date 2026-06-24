@@ -1,0 +1,12 @@
+{
+  "name": "leasing-calendar",
+  "version": "1.0.0",
+  "description": "Anthem Leasing Office Calendar",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  }
+}
