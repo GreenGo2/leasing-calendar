@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leasing Office Calendar</title>
-<!-- Google Identity Services for OAuth -->
-<script src="https://accounts.google.com/gsi/client"></script>
-<!-- Google Calendar API -->
-<script src="https://apis.google.com/js/api.js"></script>
 <style>
   :root {
     --bg: #f8f7f4;
@@ -43,7 +39,6 @@
     min-height: 100vh;
   }
 
-  /* Header */
   .app-header {
     background: var(--header-bg);
     color: var(--header-text);
@@ -89,40 +84,11 @@
     text-align: center;
   }
 
-  #auth-section {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .btn {
-    padding: 7px 18px;
-    border-radius: 6px;
-    border: none;
+  #auth-status {
     font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
+    opacity: 0.8;
   }
-  .btn-primary {
-    background: #fff;
-    color: var(--header-bg);
-  }
-  .btn-primary:hover { background: #e2e8f0; }
-  .btn-danger {
-    background: #e53e3e;
-    color: #fff;
-  }
-  .btn-danger:hover { background: #c53030; }
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text);
-  }
-  .btn-outline:hover { background: #edf2f7; }
 
-  #auth-status { font-size: 13px; opacity: 0.8; }
-
-  /* Legend */
   .legend-bar {
     display: flex;
     gap: 18px;
@@ -151,14 +117,12 @@
     font-weight: 600;
   }
 
-  /* Main grid */
   .calendar-container {
     max-width: 1440px;
     margin: 0 auto;
     padding: 16px;
   }
 
-  /* Date section header */
   .day-section {
     background: var(--surface);
     border-radius: 10px;
@@ -182,7 +146,6 @@
     opacity: 0.85;
   }
 
-  /* Column headers */
   .grid-headers {
     display: grid;
     grid-template-columns: 32px var(--time-col) var(--name-col) var(--phone-col) var(--email-col) var(--units-col) var(--notes-col);
@@ -200,7 +163,6 @@
   }
   .grid-headers > div:last-child { border-right: none; }
 
-  /* Time slot row */
   .slot-row {
     display: grid;
     grid-template-columns: 32px var(--time-col) var(--name-col) var(--phone-col) var(--email-col) var(--units-col) var(--notes-col);
@@ -212,7 +174,6 @@
   .slot-row:hover { background: #faf9f6; }
   .slot-row.confirmed { background: #f0faf0; }
   .slot-row.unconfirmed { background: #fffbe6; }
-  .slot-row.double-booked { background: #fff8e1; }
 
   .slot-row > div {
     padding: 6px 8px;
@@ -276,11 +237,9 @@
 
   .col-notes { font-size: 12px !important; color: var(--text-muted); }
 
-  /* Closed / empty day */
   .closed-row .col-name { color: #999; font-style: italic; }
   .closed-row .col-name::before { content: "🔒 "; }
 
-  /* CLOSED marker */
   .closed-badge {
     color: #e53e3e;
     font-weight: 600;
@@ -288,7 +247,6 @@
     text-transform: uppercase;
   }
 
-  /* Loading state */
   .loading-state {
     text-align: center;
     padding: 60px 20px;
@@ -305,7 +263,12 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Status indicators */
+  .error-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .error-state p { color: #e53e3e; margin-bottom: 8px; }
+
   .status-dot {
     width: 8px;
     height: 8px;
@@ -318,41 +281,11 @@
   .status-dot.unconfirmed { background: #d69e2e; }
   .status-dot.pending { background: #a0aec0; }
 
-  /* Auth setup guide */
-  .setup-guide {
-    max-width: 680px;
-    margin: 40px auto;
-    padding: 32px;
-    background: var(--surface);
-    border-radius: 10px;
-    border: 1px solid var(--border);
-  }
-  .setup-guide h2 { font-size: 18px; margin-bottom: 12px; }
-  .setup-guide ol { padding-left: 20px; line-height: 1.8; font-size: 14px; }
-  .setup-guide code {
-    background: #edf2f7;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 13px;
-  }
-  .setup-guide .step-done { color: #38a169; }
-  .setup-guide input[type="text"] {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 14px;
-    font-family: monospace;
-    margin-top: 8px;
-  }
-
-  /* Responsive */
   @media (max-width: 900px) {
     .grid-headers, .slot-row {
       grid-template-columns: 28px 60px 1.5fr 0 0 1.2fr 1fr;
     }
     .col-phone, .col-email { display: none !important; }
-    .phone-col, .email-col { display: none !important; }
   }
   @media (max-width: 600px) {
     .grid-headers, .slot-row {
@@ -375,19 +308,14 @@
       <button onclick="goDay(1)">Next →</button>
       <button onclick="goToday()" style="background:rgba(255,255,255,0.08);font-size:12px;">Today</button>
     </div>
-    <div id="auth-section">
-      <span id="auth-status">Not connected</span>
-      <button id="auth-btn" class="btn btn-primary" onclick="handleAuthClick()" style="display:none;">Sign in with Google</button>
-      <button id="signout-btn" class="btn btn-danger" onclick="signOut()" style="display:none;">Sign Out</button>
-    </div>
+    <span id="auth-status">✅ Connected</span>
   </div>
 </div>
 
 <div class="legend-bar">
   <span style="font-weight:600;font-size:12px;">Legend:</span>
   <span class="legend-item"><span class="legend-swatch" style="background:#d4edda;"></span> Confirmed</span>
-  <span class="legend-item"><span class="legend-swatch" style="background:#fff3cd;"></span> Unconfirmed (Purple)</span>
-  <span class="legend-item"><span class="legend-swatch" style="background:#fce4b8;"></span> Double Booking (Yellow)</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:#fff3cd;"></span> Unconfirmed</span>
   <span class="legend-item"><span class="legend-badge" style="background:#cfe2ff;">E</span> Emailed</span>
   <span class="legend-item"><span class="legend-badge" style="background:#d1e7dd;">OK</span> Ok to Show</span>
   <span class="legend-item"><span class="legend-badge" style="background:#f8d7da;">V</span> Vacant</span>
@@ -396,316 +324,39 @@
 </div>
 
 <div id="app-content">
-  <div class="setup-guide" id="setup-guide">
-    <h2>🔌 Connect to Google Calendar</h2>
-    <p style="color:var(--text-muted);margin-bottom:16px;">This app shows your Google Calendar events in the leasing schedule format. Set up Google Calendar API access:</p>
-    <ol>
-      <li id="step1">Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a></li>
-      <li id="step2">Create a new project or select existing</li>
-      <li id="step3">Enable <strong>Google Calendar API</strong></li>
-      <li id="step4">Go to <strong>Credentials</strong> → <strong>Create Credentials</strong> → <strong>OAuth 2.0 Client ID</strong></li>
-      <li id="step5">Application type: <strong>Web application</strong></li>
-      <li id="step6">Add <strong>Authorized JavaScript origins</strong>: <code id="originUrl">loading...</code></li>
-      <li id="step7">Paste your <strong>Client ID</strong> below and click Connect</li>
-    </ol>
-    <div style="display:flex;gap:8px;margin-top:12px;">
-      <input type="text" id="clientIdInput" placeholder="Paste your Google OAuth Client ID here..." style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:6px;font-size:14px;">
-      <button class="btn btn-primary" onclick="saveClientId()" style="padding:10px 20px;background:var(--accent);color:#fff;">Connect</button>
-    </div>
-    <p style="margin-top:12px;font-size:13px;color:var(--text-muted);">
-      💡 No Google Cloud project? <strong>Try demo mode</strong> below to see the format with sample data.
-    </p>
-    <button class="btn btn-outline" onclick="loadDemoData()" style="margin-top:4px;">Load Demo Data</button>
+  <div class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading calendar...</p>
   </div>
 </div>
 
 <script>
 // ========== State ==========
 let currentDate = new Date();
-let eventsCache = [];
-let isAuthenticated = false;
-let gapiInited = false;
-let gisInited = false;
-let tokenClient = null;
-let accessToken = null;
-const CLIENT_ID_KEY = 'leasing_cal_client_id';
-const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
-
-// ========== Demo Data ==========
-const DEMO_EVENTS = [
-  { time: '10:00', name: 'Pooji (RV)', phone: '646-808-4595', email: 'PoojiNYC@gmail.com', units: ['1702-v'], notes: '', confirmed: true },
-  { time: '10:30', name: '', phone: '', email: '', units: [], notes: '', confirmed: false },
-  { time: '11:00', name: '', phone: '', email: '', units: [], notes: '', confirmed: false },
-  { time: '11:30', name: '', phone: '', email: '', units: [], notes: '', confirmed: false },
-  { time: '12:00', name: 'Luana Feng', phone: '', email: 'fengluana@gmail.com', units: ['1702-v'], notes: 'Has cat. No roommate. Budget 4k-6k. In-unit W/D. Move-in 3/20.', confirmed: false },
-  { time: '12:30', name: '', phone: '', email: '', units: [], notes: '', confirmed: false },
-  { time: '13:00', name: 'Nate Goodman', phone: '', email: 'nategoodman1998@gmail.com', units: ['1702-v', '1910-no', '2302-ok'], notes: '', confirmed: true },
-  { time: '13:30', name: '', phone: '', email: '', units: [], notes: '', confirmed: false },
-  { time: '14:00', name: 'Nikhila Potharaj', phone: '', email: 'pothnik@gmail.com', units: ['1702-v', '2302-e'], notes: '', confirmed: true },
-  { time: '14:30', name: '', phone: '', email: '', units: [], notes: '', confirmed: false },
-  { time: '15:00', name: 'Chloe Zhang & Kevin', phone: '', email: 'chzhan647@gmail.com', units: ['1910-ok', '1702-v', '2302-ok'], notes: 'Looking for 1BR, 5k-6k, Jan move-in.', confirmed: false },
-  { time: '15:30', name: '', phone: '', email: '', units: [], notes: '', confirmed: false },
-  { time: '16:00', name: 'Nicole Adelia', phone: '917-309-3045', email: 'norphanos@elliman.com', units: ['1702-v', '2302-e'], notes: '$4500 max, Feb start', confirmed: false },
-  { time: '16:30', name: '', phone: '', email: '', units: [], notes: '', confirmed: false },
-  { time: '17:00', name: 'CLOSED', phone: '', email: '', units: [], notes: '', confirmed: false, closed: true },
-  { time: '17:30', name: '', phone: '', email: '', units: [], notes: '', confirmed: false },
-  { time: '18:00', name: '', phone: '', email: '', units: [], notes: '', confirmed: false },
-];
-
-// More demo events for consecutive days
-function generateDemoWeek(startDate) {
-  const days = [];
-  const names = [
-    ['Pooji (RV)', 'Luana Feng', '', 'Nate Goodman', '', 'Alex Geller', ''],
-    ['', 'Megan', 'Melanie (CALL)', '', '', '', 'Kumiko'],
-    ['Russ Brandon', '', 'Emma Itzla', '', 'Nikhila', '', ''],
-    ['', 'Jane Katz', 'Myles Gamboa', '', '', 'Heddie F.', ''],
-    ['Benny (Ash)', '', '', 'Jonathan Zarka', '', '', ''],
-    ['', 'PTE', '', '', 'Chloe & Kevin', '', ''],
-    ['', '', 'Ali Bennett', '', 'Todd Grundleger', '', 'Katie Joy'],
-  ];
-  const phones = [
-    ['646-808-4595', '', '', '', '', '', ''],
-    ['', '508-654-7471', '404-242-1161', '', '', '', '347-899-0561'],
-    ['585-441-4632', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', ''],
-    ['', '', '', '516-642-5636', '', '', ''],
-    ['', '', '', '', '', '', ''],
-    ['', '', '860-716-2517', '', '', '', ''],
-  ];
-  const units = [
-    ['1702-v', '1702-v', '', '1702-v,1910-no,2302-ok', '', '2021-ok,1722-e', ''],
-    ['', '1702-v', '622-no,1625-e', '', '', '', '1702-v,2218-v for 2302'],
-    ['821-ok,622-ok,2021-ok', '', '1501-ok', '', '1702-v,2302-e', '', ''],
-    ['', '1625-ok', '2302-ok,1702-v', '', '', '1702-v', ''],
-    ['1702-v,2118-v for 2302', '', '', '2218 for 2302-v', '', '', ''],
-    ['', '', '', '', '1910-ok,1702-v,2302-ok', '', ''],
-    ['', '', '1702-v,2218-v for 2302', '', '1702-v,2218-v for 2302', '', '1702-v,2218-v for 2302'],
-  ];
-  const emails = [
-    ['PoojiNYC@gmail.com', 'fengluana@gmail.com', '', 'nategoodman1998@gmail.com', '', 'Alex@gellerts.com', ''],
-    ['', 'MegBouv2@yahoo.com', 'melanie.g.epstein@gmail.com', '', '', '', 'kumiko@able-global.com'],
-    ['Russ.Brandon@theufl.com', '', 'emmaitzla@gmail.com', '', 'pothnik@gmail.com', '', ''],
-    ['', 'jkatz@cbwarburg.com', '', '', '', 'hflurscheim@gmail.com', ''],
-    ['', '', '', 'zarkajonathan98@gmail.com', '', '', ''],
-    ['', '', '', '', 'chzhan647@gmail.com', '', ''],
-    ['', '', 'ahb793@gmail.com', '', 'tgrundleger@gmail.com', '', 'katie.verutti@compass.com'],
-  ];
-
-  for (let d = 0; d < 7; d++) {
-    const date = new Date(startDate);
-    date.setDate(date.getDate() + d);
-    const slots = [];
-    for (let h = 10; h <= 18; h++) {
-      const idx = d % names.length;
-      const slotIdx = (h - 10);
-      const name = (names[idx] && names[idx][slotIdx]) || '';
-      slots.push({
-        time: `${String(h).padStart(2,'0')}:00`,
-        name: name,
-        phone: (phones[idx] && phones[idx][slotIdx]) || '',
-        email: (emails[idx] && emails[idx][slotIdx]) || '',
-        units: name ? ((units[idx] && units[idx][slotIdx]) || '1702-v').split(',') : [],
-        notes: '',
-        confirmed: !!name && Math.random() > 0.4,
-        closed: false
-      });
-    }
-    days.push({ date: date, slots: slots });
-  }
-  return days;
-}
-
-// ========== Initialize ==========
-document.getElementById('originUrl').textContent = window.location.origin;
-
-function gapiLoaded() {
-  gapi.load('client', initializeGapiClient);
-}
-
-async function initializeGapiClient() {
-  await gapi.client.init({});
-  gapiInited = true;
-  maybeEnableAuth();
-}
-
-function maybeEnableAuth() {
-  if (gapiInited && gisInited) {
-    document.getElementById('auth-btn').style.display = 'inline-block';
-  }
-}
-
-function handleAuthClick() {
-  if (!accessToken) {
-    tokenClient.callback = async (resp) => {
-      if (resp.error !== undefined) throw resp;
-      accessToken = resp.access_token;
-      document.getElementById('auth-status').textContent = '✅ Connected';
-      document.getElementById('auth-btn').style.display = 'none';
-      document.getElementById('signout-btn').style.display = 'inline-block';
-      isAuthenticated = true;
-      document.getElementById('setup-guide').style.display = 'none';
-      await loadCalendarEvents();
-    };
-    tokenClient.requestAccessToken({ prompt: 'consent' });
-  } else {
-    await loadCalendarEvents();
-  }
-}
-
-function signOut() {
-  accessToken = null;
-  isAuthenticated = false;
-  google.accounts.oauth2.revoke(accessToken, () => {});
-  document.getElementById('auth-status').textContent = 'Not connected';
-  document.getElementById('auth-btn').style.display = 'inline-block';
-  document.getElementById('signout-btn').style.display = 'none';
-  document.getElementById('setup-guide').style.display = 'block';
-}
-
-function saveClientId() {
-  const clientId = document.getElementById('clientIdInput').value.trim();
-  if (!clientId) return alert('Please paste your OAuth Client ID');
-  localStorage.setItem(CLIENT_ID_KEY, clientId);
-  initOAuth(clientId);
-}
-
-function initOAuth(clientId) {
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: clientId,
-    scope: SCOPES,
-    callback: () => {},
-  });
-  gisInited = true;
-  maybeEnableAuth();
-  document.getElementById('auth-btn').textContent = '🔑 Sign in with Google';
-  document.getElementById('auth-status').textContent = 'Ready — click Sign In';
-}
-
-// Restore saved client ID
-const savedClientId = localStorage.getItem(CLIENT_ID_KEY) || '771435431651-bm0p6evh7uvclfhugqfa6gudu4atr2p7.apps.googleusercontent.com';
-if (savedClientId) {
-  document.getElementById('clientIdInput').value = savedClientId;
-  gapiLoaded();
-  // gis init triggered by gapiLoaded -> maybeEnableAuth waits for both
-  // Need to also init GIS
-  setTimeout(() => {
-    if (google && google.accounts) {
-      initOAuth(savedClientId);
-    } else {
-      // GIS loads async, retry
-      let tries = 0;
-      const iv = setInterval(() => {
-        if (google && google.accounts) {
-          initOAuth(savedClientId);
-          clearInterval(iv);
-        }
-        if (++tries > 20) clearInterval(iv);
-      }, 500);
-    }
-  }, 500);
-} else {
-  gapiLoaded();
-  // Google Identity Services loads separately
-  let tries = 0;
-  const iv = setInterval(() => {
-    if (typeof google !== 'undefined' && google.accounts) {
-      // Just mark gis as ready with a placeholder
-      gisInited = true;
-      maybeEnableAuth();
-      clearInterval(iv);
-    }
-    if (++tries > 20) clearInterval(iv);
-  }, 500);
-}
-
-// ========== Calendar API ==========
-async function loadCalendarEvents() {
-  if (!accessToken) return;
-  gapi.client.setToken({ access_token: accessToken });
-
-  const startOfDay = new Date(currentDate);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(currentDate);
-  endOfDay.setHours(23, 59, 59, 999);
-
-  try {
-    const response = await gapi.client.calendar.events.list({
-      calendarId: 'primary',
-      timeMin: startOfDay.toISOString(),
-      timeMax: endOfDay.toISOString(),
-      singleEvents: true,
-      orderBy: 'startTime',
-    });
-    const events = response.result.items || [];
-    eventsCache = events.map(e => parseGCalEvent(e));
-    renderDay(currentDate, eventsCache);
-  } catch (err) {
-    console.error('Calendar API error:', err);
-    document.getElementById('app-content').innerHTML = `
-      <div class="loading-state">
-        <p style="color:#e53e3e;">⚠️ Error loading calendar: ${err.message}</p>
-        <p style="color:var(--text-muted);font-size:14px;margin-top:8px;">Make sure Google Calendar API is enabled in your Cloud project.</p>
-      </div>`;
-  }
-}
-
-function parseGCalEvent(event) {
-  const title = event.summary || '';
-  const desc = event.description || '';
-  const start = event.start?.dateTime || event.start?.date;
-  const end = event.end?.dateTime || event.end?.date;
-
-  // Parse structured data from event
-  // Support format: "Name (Status) | Phone | 1702-v, 2302-ok"
-  let name = title;
-  let phone = '';
-  let email = '';
-  let units = [];
-  let notes = desc;
-  let confirmed = false;
-
-  // Try to extract from title if pipe-separated
-  const parts = title.split('|').map(s => s.trim());
-  if (parts.length >= 2) {
-    name = parts[0];
-    phone = parts[1] || '';
-    if (parts[2]) units = parts[2].split(',').map(s => s.trim()).filter(Boolean);
-    if (parts[3]) email = parts[3];
-  }
-
-  // Extract email from description if present
-  const emailMatch = desc.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
-  if (emailMatch && !email) email = emailMatch[1];
-
-  // Extract status from title
-  confirmed = !title.includes('(?)') && title.length > 0;
-
-  const startTime = start || '';
-  const timeStr = typeof startTime === 'string' && startTime.includes('T')
-    ? startTime.split('T')[1]?.substring(0, 5)
-    : '';
-
-  return { time: timeStr, name, phone, email, units, notes, confirmed, raw: event };
-}
-
-// ========== Render ==========
 const TIME_SLOTS = [
   '10:00','10:30','11:00','11:30','12:00','12:30',
   '13:00','13:30','14:00','14:30','15:00','15:30',
   '16:00','16:30','17:00','17:30','18:00'
 ];
 
+// ========== API Calls ==========
+async function fetchEvents(date) {
+  const dateStr = date.toISOString().split('T')[0];
+  const resp = await fetch(`/api/events?date=${dateStr}`);
+  if (!resp.ok) {
+    const err = await resp.json();
+    throw new Error(err.error || `HTTP ${resp.status}`);
+  }
+  return await resp.json();
+}
+
+// ========== Render ==========
 function renderDay(date, events) {
   currentDate = date;
   updateDateDisplay(date);
 
   const container = document.getElementById('app-content');
-  const dateStr = date.toISOString().split('T')[0];
   const dayName = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-
-  // Check if today (CLOSED detection from title or empty)
-  const isClosed = events.length === 0;
 
   let html = `
     <div class="day-section">
@@ -730,79 +381,11 @@ function renderDay(date, events) {
 
   for (const time of TIME_SLOTS) {
     const ev = eventMap[time] || { time, name: '', phone: '', email: '', units: [], notes: '', confirmed: false };
-    const isClosed = ev.name === 'CLOSED';
     const hasData = ev.name && ev.name !== 'CLOSED';
 
-    // Determine row class
     let rowClass = 'slot-row';
     if (hasData && ev.confirmed) rowClass += ' confirmed';
     else if (hasData) rowClass += ' unconfirmed';
-    if (isClosed) rowClass += ' closed-row';
-
-    // Build unit badges
-    const unitHtml = ev.units && ev.units.length > 0
-      ? ev.units.map(u => {
-          const trimmed = u.trim();
-          const suffix = trimmed.includes('-') ? trimmed.split('-').pop().toLowerCase() : '';
-          const badgeClass = ['e','ok','v','no','r'].includes(suffix) ? suffix : 'default';
-          return `<span class="unit-badge ${badgeClass}">${trimmed}</span>`;
-        }).join(' ')
-      : '';
-
-    html += `
-      <div class="${rowClass}">
-        <div class="col-checkbox">
-          ${hasData ? `<span class="check-indicator ${ev.confirmed ? 'checked' : ''}">${ev.confirmed ? '✓' : ''}</span>` : ''}
-        </div>
-        <div class="col-time">${time}</div>
-        <div class="col-name">
-          ${isClosed ? '<span class="closed-badge">🔒 CLOSED</span>' : (ev.name || '<span class="empty-label">—</span>')}
-        </div>
-        <div class="col-phone phone-col">${ev.phone || ''}</div>
-        <div class="col-email email-col">${ev.email || ''}</div>
-        <div class="col-units">${unitHtml}</div>
-        <div class="col-notes notes-col">${ev.notes || ''}</div>
-      </div>`;
-  }
-
-  html += '</div>';
-  container.innerHTML = html;
-}
-
-function renderDayFromData(date, slots) {
-  const container = document.getElementById('app-content');
-  const dayName = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-
-  let html = `
-    <div class="day-section">
-      <div class="day-header">
-        <span>${dayName}</span>
-        <span class="status-legend">E-Emailed &nbsp; OK-Ok to Show &nbsp; V-Vacant &nbsp; R-Rented</span>
-      </div>
-      <div class="grid-headers">
-        <div></div>
-        <div>Time</div>
-        <div>Name</div>
-        <div class="phone-col">Phone</div>
-        <div class="email-col">Email</div>
-        <div>Units</div>
-        <div class="notes-col">Notes</div>
-      </div>`;
-
-  const slotMap = {};
-  for (const s of slots) {
-    slotMap[s.time] = s;
-  }
-
-  for (const time of TIME_SLOTS) {
-    const ev = slotMap[time] || { time, name: '', phone: '', email: '', units: [], notes: '', confirmed: false };
-    const hasData = ev.name && ev.name !== 'CLOSED' && ev.name !== '';
-    const isClosed = ev.closed;
-
-    let rowClass = 'slot-row';
-    if (hasData && ev.confirmed) rowClass += ' confirmed';
-    else if (hasData) rowClass += ' unconfirmed';
-    if (isClosed) rowClass += ' closed-row';
 
     const unitHtml = ev.units && ev.units.length > 0
       ? ev.units.map(u => {
@@ -820,7 +403,7 @@ function renderDayFromData(date, slots) {
         </div>
         <div class="col-time">${time}</div>
         <div class="col-name">
-          ${isClosed ? '<span class="closed-badge">🔒 CLOSED</span>' : (ev.name || '<span class="empty-label">—</span>')}
+          ${ev.name ? ev.name : '<span class="empty-label">—</span>'}
         </div>
         <div class="col-phone phone-col">${ev.phone || ''}</div>
         <div class="col-email email-col">${ev.email || ''}</div>
@@ -839,57 +422,40 @@ function updateDateDisplay(date) {
 }
 
 // ========== Navigation ==========
-function goDay(delta) {
+async function goDay(delta) {
   const newDate = new Date(currentDate);
   newDate.setDate(newDate.getDate() + delta);
   currentDate = newDate;
   updateDateDisplay(newDate);
-
-  if (isAuthenticated) {
-    loadCalendarEvents();
-  } else if (demoMode) {
-    renderDemoDay(newDate);
-  } else {
-    // Show setup guide again
-    document.getElementById('app-content').innerHTML = document.getElementById('setup-guide').outerHTML;
-  }
+  await loadDay(newDate);
 }
 
-function goToday() {
+async function goToday() {
   currentDate = new Date();
   updateDateDisplay(currentDate);
-  if (isAuthenticated) loadCalendarEvents();
-  else if (demoMode) renderDemoDay(currentDate);
+  await loadDay(currentDate);
 }
 
-// ========== Demo Mode ==========
-let demoMode = false;
-let demoDays = [];
-
-function loadDemoData() {
-  demoMode = true;
-  document.getElementById('setup-guide').style.display = 'none';
-  document.getElementById('auth-status').textContent = '📊 Demo Mode';
-
-  const today = new Date();
-  demoDays = generateDemoWeek(today);
-  renderDemoDay(today);
-}
-
-function renderDemoDay(date) {
-  const dateStr = date.toISOString().split('T')[0];
-  const dayData = demoDays.find(d => d.date.toISOString().split('T')[0] === dateStr);
-  if (dayData) {
-    renderDayFromData(dayData.date, dayData.slots);
-  } else {
-    // Generate empty day
-    const emptySlots = TIME_SLOTS.map(t => ({ time: t, name: '', phone: '', email: '', units: [], notes: '', confirmed: false }));
-    renderDayFromData(date, emptySlots);
+async function loadDay(date) {
+  const container = document.getElementById('app-content');
+  container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading...</p></div>';
+  try {
+    const events = await fetchEvents(date);
+    renderDay(date, events);
+  } catch (err) {
+    container.innerHTML = `
+      <div class="error-state">
+        <p>⚠️ Could not load calendar</p>
+        <p style="color:var(--text-muted);font-size:14px;">${err.message}</p>
+        <p style="margin-top:16px;"><button class="btn" onclick="location.reload()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;">Retry</button></p>
+      </div>`;
+    console.error('Load error:', err);
   }
 }
 
-// Initialize
+// ========== Init ==========
 updateDateDisplay(new Date());
+loadDay(new Date());
 </script>
 </body>
 </html>
