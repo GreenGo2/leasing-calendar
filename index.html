@@ -232,6 +232,7 @@
   .unit-badge.ok { background: var(--ok-badge); color: #155724; }
   .unit-badge.v { background: var(--v-badge); color: #721c24; }
   .unit-badge.no { background: var(--no-badge); color: #721c24; }
+  .unit-badge.ns { background: #e2e3e5; color: #383d41; }
   .unit-badge.r { background: var(--r-badge); color: #383d41; }
   .unit-badge.default { background: #e9ecef; color: #495057; }
 
@@ -321,6 +322,7 @@
   <span class="legend-item"><span class="legend-badge" style="background:#f8d7da;">V</span> Vacant</span>
   <span class="legend-item"><span class="legend-badge" style="background:#e2e3e5;">R</span> Rented</span>
   <span class="legend-item"><span class="legend-badge" style="background:#f5c6cb;">NO</span> Not Available</span>
+  <span class="legend-item"><span class="legend-badge" style="background:#e2e3e5;">NS</span> No Show</span>
 </div>
 
 <div id="app-content">
@@ -362,7 +364,7 @@ function renderDay(date, events) {
     <div class="day-section">
       <div class="day-header">
         <span>${dayName}</span>
-        <span class="status-legend">E-Emailed &nbsp; OK-Ok to Show &nbsp; V-Vacant &nbsp; R-Rented</span>
+        <span class="status-legend">E-Emailed &nbsp; OK-Ok to Show &nbsp; V-Vacant &nbsp; R-Rented &nbsp; NS-No Show</span>
       </div>
       <div class="grid-headers">
         <div></div>
@@ -391,7 +393,7 @@ function renderDay(date, events) {
       ? ev.units.map(u => {
           const trimmed = u.trim();
           const suffix = trimmed.includes('-') ? trimmed.split('-').pop().toLowerCase() : '';
-          const badgeClass = ['e','ok','v','no','r'].includes(suffix) ? suffix : 'default';
+          const badgeClass = ['e','ok','v','no','r','ns'].includes(suffix) ? suffix : 'default';
           return `<span class="unit-badge ${badgeClass}">${trimmed}</span>`;
         }).join(' ')
       : '';
