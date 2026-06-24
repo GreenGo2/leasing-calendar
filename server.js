@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 8765;
 
 // OAuth credentials from Google Cloud Console
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '771435431651-bm0p6evh7uvclfhugqfa6gudu4atr2p7.apps.googleusercontent.com';
-const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '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';
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 
 // Redirect URI — must match what's in Google Cloud Console
 // For local dev: http://localhost:8765/oauth2callback
